@@ -15,6 +15,7 @@ This study is a reproduction of:
 - [Peter Kedron](https://sgsup.asu.edu/peter-kedron)
 - [Derrick Burt](https://derrickburt.github.io)
 - Middlebury [GEOG0323](https://gis4dev.github.io) Class of Fall 2019.
+- [Benjamin Cordola](https:benjamincordola.github.io)
 
 ## Repository Documents
 
