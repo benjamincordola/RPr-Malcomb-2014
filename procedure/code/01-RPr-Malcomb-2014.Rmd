@@ -81,8 +81,10 @@ The original study was conducted using STATA&trade; (4.4) and ArcGIS&trade; (4.6
 The study was originally conducted using ArcGIS and unspecified statistical software.
 This reproduction study uses R, including the rdhs package for DHS survey data, the sf package for vector analysis, the stars package for raster analysis, and the tmap package for cartography.
 
+
 ```{r setup, include = FALSE}
 # list of required packages
+
 packages = c("downloader", "rdhs", "haven", "readr", "tidyverse", "pastecs",
              "stars", "sf", "sp", "classInt", 
              "tmap", "units", "knitr", "rgdal")
