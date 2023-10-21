@@ -2,13 +2,12 @@
 title: "Reproduction Analysis of Malcomb et al 2014"
 author: "Joseph Holler, Kufre Udoh, Drew An-Pham, Middlebury Open GIScience Classes"
 date: "`r Sys.Date()`"
-output: pdf_document
-always_allow_html: true
+output: html_document
 editor_options:
   markdown:
     wrap: sentence
 knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../../docs/report") })
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../../docs") })
 ---
 
 # Abstract 
