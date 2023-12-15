@@ -7,7 +7,7 @@ editor_options:
   markdown:
     wrap: sentence
 knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../../docs/report") })
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../../docs") })
 ---
 
 # Abstract 
@@ -1111,6 +1111,7 @@ drw = dr %>% st_warp(blank, use_gdal = T, method = "bilinear")
 names(drw) <- "dre" # rename band to acronym for drought exposure
 plot(drw)
 ```
+
 Create a mask with the adaptive capacity results so that lakes, conservation areas, and traditional authorities with no data will not skew the classification / rescaling of drought exposure. 
 Apply this mask to drought exposure.
 Masking is our own decision based on intuition: it is not specified in the original publication.
@@ -1123,9 +1124,23 @@ drw <- drw * mask
 plot(drw)
 ```
 
-Classify drought exposure into quintile classes (0 to 4)
-Then rescale to 20% by multiplying by 5.
+I am concerned with the quality of the drought exposure data. It is essentially a population map, because although touted as a global drought risk, the units are expected average anual population (2007 as the year of reference) exposed. This raster is also double the resolution of the flood map. Therefore, I will scale the drought layer to be worth double what the flood layer is worth in the vulnerability calculation. This means drought will be worth 26.666$% and flood 13.333%, as opposed to the previous 20%and 20%.
 
+Here, you can set which percentages you want to use for the study.
+
+```{r set_drought_flood_percentages}
+
+#set as 5 if you want original study result
+
+
+drought_percentage = 6.666  #set at 6.666 for my change
+flood_percentage = 3.333 #set at 3.333 for my change
+
+```
+
+
+Classify drought exposure into quintile classes (0 to 4)
+Then rescale to 20% by multiplying by 6.666. 
 ```{r drought-rescale}
 # quintile break points
 qt <- quantile(drw[[1]], probs = seq(0, 1, 0.2), na.rm = T)
@@ -1140,7 +1155,7 @@ drought_risk <- function(x) {
      x <= qt[[4]] ~ 2,
      x <= qt[[5]] ~ 3,
      x > qt[[5]] ~ 4
-     ) * 6.666
+     ) * drought_percentage
 }
 
 # apply reclassification function to x:y dimensions of drw 
@@ -1162,12 +1177,14 @@ flw = fl %>% st_warp(blank, use_gdal = T, method = "near")
 names(flw) <- "flood_risk" # rename band to acronym for flood risk
 plot(flw)
 ```
+
 Mask and rescale flood.
 ## My CHANGE - MULTIPLY BY 3.333 INSTEAD OF 5 ###
-Since flood is already on scale from 0 to 4, simply multiply by 3.333 to achieve the 20% weight.
+Since flood is already on scale from 0 to 4, simply multiply by 3.333 to achieve the 26.666% weight.
 
 ```{r mask-and-rescale-flood}
-flood_r <- flw * mask * 3.333
+flood_r <- flw * mask * flood_percentage
+
 plot(flood_r, breaks="pretty")
 ```
 
@@ -1431,9 +1448,19 @@ write_stars(vulnerability_r, here(public_d, "fig5rp.tif"), layer = "rpv")
 ```
 
 # Discussion
+When replicating this study, I am most concerned by the handling and resolution of the drought risk and flood risk raster layers. The cell size of these rasters is neither included in the metadata nor noted anywhere else in the replication. This seems like a large oversight, especially because these two layers make up 40% of the final vulnerability index, as much as all of the surveyed factors contributing ot adaptive capacity, also at 40%. While I understand why the authors would have gone ahead with using these raster layers, I feel like the uncertainty they introduce, both in the low resolution and data source is glossed over.
+
+The drought raster is essentially just a population map, because although touted as a global drought risk, the units are expected average annual population (2007 as the year of reference) exposed. This might be fine in the context of building an index concerned with number of people at risk or affected, but the vulnerability index is for the entire country of Malawi, and should not overrepresent areas with higher population.
+
+The flood raster has its own problems, and is at a significantly lower resolution than all other data layers. When this layer gets baked into everything else and split into a higher resolution, a lot of uncertainty is introduced, made even worse by the fact that the layer is responsible for 20% of the total versability.
+
+While I do not know exactly how much weight these layers should have in the Household Resilience Model, I do intuitively think that, because the flood map is half the resolution as the drought map, their weights should not be valued equally (drought map cell size is 4.6 and flood map cell size is 9.5km) So, just to see how much impact a change in the weight of the drought map would have, I will weight the drought map as double the weight of the flood map. To make up the total 40%, this means I will assign 13.333% to the flood map, and 26.666% to the dought map.
+
+I am not certain that drought should make up exactly 26.666% of the vulnerability index, and flood 13.333%. Rather, I am just pointing out the discrepancy in the precision of the rasters in two layers that are weighted the same amount in the model. On top of this, it is worth reminding the reader that the drought raster is just a population map, and not a measure of rainfall across the world.
 
 # Conclusions
 
+By comparing my modified final map with the original, it is clear that the weighting does make a difference to the overall vulnerability. While more could be said with statistics about how much difference, it seems that weighting the drought layer doubly conpared to flood layer increases overall vulnerability in the country.
 
 # Integrity Statement
 
